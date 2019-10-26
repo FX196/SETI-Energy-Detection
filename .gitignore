@@ -1,2 +1,6 @@
+dask-worker-space/
+__pycache__/
+original_a/
+normalized_a/
 /data
 .DS_Store
