@@ -37,7 +37,7 @@ def to_npy_stack(source_h5_path, dest_path, channel_len=1033216):
 
 
 def remove_broadband(source_h5_path):
-
+    pass
 
 def remove_bandpass():
     pass
