@@ -29,10 +29,9 @@ plt_args = {
     'cmap': 'viridis'
 }
 
-# from dask.distributed import Client
-#
-# client = Client(processes=False, threads_per_worker=3,
-#                 n_workers=4, memory_limit='4GB')
+from dask.distributed import Client
+
+# client = Client(processes=False, threads_per_worker=3, n_workers=4, memory_limit='8GB')
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
@@ -51,7 +50,7 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
     da.to_npy_stack(dest_path, arr, axis=2)
     if verbose:
         end = time()
-        print(f"Converted to npy stack in {end - start} seconds.")
+        print("Converted to npy stack in %.4f seconds." % (end-start))
 
 
 def remove_broadband(source_h5_path):

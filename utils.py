@@ -34,7 +34,7 @@ def plot_segment(plot_data):
     if plot_data.shape[1] > MAX_IMSHOW_POINTS[1]:
         dec_fac_y = int(plot_data.shape[1] / MAX_IMSHOW_POINTS[1])
 
-    print(f'Downsampling by a factor of ({dec_fac_x}, {dec_fac_y})')
+    print('Downsampling by a factor of (%d, %d)' %(dec_fac_x, dec_fac_y))
     plot_data = rebin(plot_data, dec_fac_x, dec_fac_y)
     plt.figure(figsize=(10, 6))
     plt.imshow(plot_data, **plt_args)
