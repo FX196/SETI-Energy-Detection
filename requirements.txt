@@ -56,7 +56,7 @@ more-itertools==6.0.0
 msgpack==0.6.2
 nbconvert==5.4.0
 nbformat==4.4.0
-notebook==5.7.4
+notebook==5.7.8
 numpy==1.16.1
 packaging==19.0
 pandas==0.25.1
@@ -106,7 +106,7 @@ toolz==0.10.0
 tornado==5.1.1
 tqdm==4.31.1
 traitlets==4.3.2
-urllib3==1.24.1
+urllib3==1.24.2
 wcwidth==0.1.7
 webencodings==0.5.1
 widgetsnbextension==3.4.2
