@@ -31,8 +31,6 @@ plt_args = {
 
 from dask.distributed import Client
 
-# client = Client(processes=False, threads_per_worker=3, n_workers=4, memory_limit='8GB')
-
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
     """
@@ -53,8 +51,21 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
         print("Converted to npy stack in %.4f seconds." % (end-start))
 
 
-def remove_broadband(source_h5_path):
-    pass
+def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
+    client = Client(processes=False, threads_per_worker=3, n_workers=4, memory_limit='8GB')
+
+    if verbose:
+        start = time()
+
+    a = da.from_npy_stack(source_npy_path)
+    means = da.mean(a, axis=2)
+    means = da.reshape(means, (16,1,1))     # reshape to fit original data dimensions
+    normalized_a = da.divide(a, means)      # divide by mean
+    da.to_npy_stack(dest_npy_path, normalized_a, axis=2)    # write to npy stack
+
+    if verbose:
+        end = time()
+        print("Converted to npy stack in %.4f seconds." % (end-start))
 
 def remove_bandpass():
     pass
@@ -66,3 +77,4 @@ def gaussianity_thresholding():
 if __name__ == "__main__":
     input_file, out_dir = sys.argv[1:3]
     to_npy_stack(input_file, out_dir, True)
+    remove_broadband(out_dir, out_dir+"normalized", True)
