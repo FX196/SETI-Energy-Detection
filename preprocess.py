@@ -13,6 +13,7 @@ from utils import *
 import dask.array as da
 import h5py
 import sys
+import os
 
 fil_path = "data/filterbanks/"
 h5_path = "data/h5/"
@@ -52,7 +53,7 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
 
 
 def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
-    client = Client(processes=False, threads_per_worker=3, n_workers=4, memory_limit='8GB')
+    client = Client(processes=False, threads_per_worker=3, n_workers=os.cpu_count()//3, memory_limit='8GB')
 
     if verbose:
         start = time()
