@@ -92,7 +92,7 @@ def remove_bandpass(source_npy_path, coarse_channel_width=1033216):
                            channels[channel_ind], coarse_channel_width)
 
         def normalize_block():
-            with Pool(12) as p:
+            with Pool(min(14, os.cpu_count())) as p:
                 cleaned = p.map(clean, range(14))
             return cleaned
         normalized = normalize_block()
