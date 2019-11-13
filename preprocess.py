@@ -47,7 +47,10 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
         print("Converting to npy stack")
     h5_file = h5py.File(source_h5_path, "r")
     arr = da.from_array(h5_file["data"], chunks=(2, 1, channel_len * 14))
-    da.to_npy_stack(dest_path, arr, axis=2)
+    if not os.path.isdir(dest_path+"/original"):
+        os.mkdir(dest_path)
+        os.mkdir(dest_path+"/original")
+    da.to_npy_stack(dest_path+"/original", arr, axis=2)
     if verbose:
         end = time()
         print("Converted to npy stack in %.4f seconds." % (end-start))
@@ -71,33 +74,33 @@ def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
         print("Removed broadband signals in %.4f seconds." % (end-start))
 
 
-def remove_bandpass(source_npy_path, coarse_channel_width=1033216):
-    # source_npy_path is the directory containing the npy stack
-    block_files = os.listdir(source_npy_path)
-
-    for block_file in block_files:
-        print("loading %s from %s" % (block_file, source_npy_path))
-        block_data = np.load(source_npy_path+"/"+block_file)
-        block_data = block_data[:, 0, :]
-        integrated = np.mean(block_data, axis=0)
-        for n in np.nonzero(integrated > 800):                          # remove DC spike
-            integrated[n] = (integrated[n-1] + integrated[n+1]) /2
-        channels = np.reshape(integrated, (-1, coarse_channel_width))
-
-
-        from multiprocessing import Pool, current_process
-        def clean(channel_ind):
-            print("%s processing channel %d of block %d" % (current_process().name, channel_ind, block_file))
-            return remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
-                           channels[channel_ind], coarse_channel_width)
-
-        def normalize_block():
-            with Pool(min(14, os.cpu_count())) as p:
-                cleaned = p.map(clean, range(14))
-            return cleaned
-        normalized = normalize_block()
-        normalized = np.concatenate(normalized, axis=1)
-        np.save(source_npy_path+"/"+block_file.split(".")[0]+"_cleaned.npy", normalized)
+# def remove_bandpass(source_npy_path, coarse_channel_width=1033216):
+#     # source_npy_path is the directory containing the npy stack
+#     block_files = os.listdir(source_npy_path)
+#
+#     for block_file in block_files:
+#         print("loading %s from %s" % (block_file, source_npy_path))
+#         block_data = np.load(source_npy_path+"/"+block_file)
+#         block_data = block_data[:, 0, :]
+#         integrated = np.mean(block_data, axis=0)
+#         for n in np.nonzero(integrated > 800):                          # remove DC spike
+#             integrated[n] = (integrated[n-1] + integrated[n+1]) /2
+#         channels = np.reshape(integrated, (-1, coarse_channel_width))
+#
+#
+#         from multiprocessing import Pool, current_process
+#         def clean(channel_ind):
+#             print("%s processing channel %d of block %d" % (current_process().name, channel_ind, block_file))
+#             return remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
+#                            channels[channel_ind], coarse_channel_width)
+#
+#         def normalize_block():
+#             with Pool(min(14, os.cpu_count())) as p:
+#                 cleaned = p.map(clean, range(14))
+#             return cleaned
+#         normalized = normalize_block()
+#         normalized = np.concatenate(normalized, axis=1)
+#         np.save(source_npy_path+"/"+block_file.split(".")[0]+"_cleaned.npy", normalized)
 
 
 def gaussianity_thresholding():
@@ -106,12 +109,15 @@ def gaussianity_thresholding():
 if __name__ == "__main__":
     input_file, out_dir = sys.argv[1:3]
     to_npy_stack(input_file, out_dir, True)
-    remove_broadband(out_dir, out_dir+"_normalized", True)
+    remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
     # remove_bandpass(out_dir+"_normalized")
 
-    source_npy_path = out_dir+"_normalized"
-    block_files = [file for file in os.listdir(out_dir+"_normalized") if file.endswith(".npy")]
+    source_npy_path = out_dir+"/normalized"
+    block_files = [file for file in os.listdir(out_dir+"/normalized") if file.endswith(".npy")]
     coarse_channel_width=1033216
+
+    if not os.path.isdir(out_dir+"/cleaned"):
+        os.mkdir(out_dir+"/cleaned")
 
     for block_file in tqdm(block_files):
         print("loading %s from %s" % (block_file, source_npy_path))
@@ -135,4 +141,27 @@ if __name__ == "__main__":
             return cleaned
         normalized = normalize_block()
         normalized = np.concatenate(normalized, axis=1)
-        np.save(source_npy_path+"/"+block_file.split(".")[0]+"_cleaned.npy", normalized)
+        np.save(out_dir+"/cleaned/" + block_file, normalized)
+
+    # import warnings
+    # warnings.filterwarnings("ignore")
+    #
+    # cleaned_block_files = []
+    #
+    #
+    # def threshold_hits(chan):
+    #     res = list()
+    #     window = data[:, channel_len*(chan):channel_len*(chan+1)]
+    #     # window_f = freqs[channel_len*(chan):channel_len*(chan+1)]
+    #     for i in range(0, (len(window[0])//200*200), 100):
+    #         test_data = window[:, i:i+200]
+    #         s, p = norm_test(test_data)
+    #         if p < 1e-25:
+    #             res.append([channel_len*(chan) + i, s, p])
+    #     return res
+    #
+    # start = time()
+    # with Pool(12) as p:
+    #     chan_hits = p.map(threshold_hits, range(14))
+    # end = time()
+    # print(end-start)
