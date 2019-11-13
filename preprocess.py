@@ -136,7 +136,7 @@ if __name__ == "__main__":
                            channels[channel_ind], coarse_channel_width)
 
         def normalize_block():
-            with Pool(12) as p:
+            with Pool(min(14, os.cpu_count())) as p:
                 cleaned = p.map(clean, range(14))
             return cleaned
         normalized = normalize_block()
