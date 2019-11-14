@@ -119,6 +119,8 @@ if __name__ == "__main__":
     if not os.path.isdir(out_dir+"/cleaned"):
         os.mkdir(out_dir+"/cleaned")
 
+    start = time()
+
     for block_file in tqdm(block_files):
         print("loading %s from %s" % (block_file, source_npy_path))
         block_data = np.load(source_npy_path+"/"+block_file)
@@ -142,6 +144,9 @@ if __name__ == "__main__":
         normalized = normalize_block()
         normalized = np.concatenate(normalized, axis=1)
         np.save(out_dir+"/cleaned/" + block_file, normalized)
+
+    end = time()
+    print("Bandpass cleaned in %.4f seconds." % (end - start))
 
     # import warnings
     # warnings.filterwarnings("ignore")
