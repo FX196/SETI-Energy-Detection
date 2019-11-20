@@ -165,15 +165,15 @@ if __name__ == "__main__":
         data = np.load(out_dir+"/cleaned/" +block_file)
         print("Processing %s" % block_file)
         block_num = block_file.split(".")[0]
-        def threshold_hits(chan):
+        def threshold_hits(channel_ind):
             res = list()
-            window = data[:, coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
+            window = data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)]
             # window_f = freqs[coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
             for i in range(0, (len(window[0])//200*200), 100):
                 test_data = window[:, i:i+200]
                 s, p = norm_test(test_data)
                 if p < threshold:
-                    res.append([coarse_channel_width*(chan) + i, s, p])
+                    res.append([coarse_channel_width*(channel_ind) + i, s, p])
             return res
 
         start = time()
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         print("Saving results")
         def save_stamps(channel_ind):
             print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-            for res in chan_hits[chan]:
+            for res in chan_hits[channel_ind]:
                 i, s, p = res
                 plt.imsave((filtered_dir+"%s_%d.png" % (block_num, i)), data[:, i:i+200])
         start = time()
