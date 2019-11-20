@@ -8,6 +8,8 @@ from tqdm import tqdm
 import dask.array as da
 import h5py
 from time import time
+from multiprocessing import Pool, current_process
+from dask.distributed import Client
 
 from utils import *
 import dask.array as da
@@ -30,7 +32,11 @@ plt_args = {
     'cmap': 'viridis'
 }
 
-from dask.distributed import Client
+
+# Hyperparameters
+coarse_channel_width=1033216
+threshold = 1e-40
+num_chans = 14
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
@@ -110,14 +116,13 @@ if __name__ == "__main__":
     input_file, out_dir = sys.argv[1:3]
     to_npy_stack(input_file, out_dir, True)
     remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
-    # remove_bandpass(out_dir+"_normalized")
 
     source_npy_path = out_dir+"/normalized"
     block_files = [file for file in os.listdir(out_dir+"/normalized") if file.endswith(".npy")]
-    coarse_channel_width=1033216
+    cleaned_dir = out_dir+"/cleaned"
 
-    if not os.path.isdir(out_dir+"/cleaned"):
-        os.mkdir(out_dir+"/cleaned")
+    if not os.path.isdir(cleaned_dir):
+        os.mkdir(cleaned_dir)
 
     start = time()
 
@@ -131,7 +136,6 @@ if __name__ == "__main__":
         channels = np.reshape(integrated, (-1, coarse_channel_width))
 
 
-        from multiprocessing import Pool, current_process
         def clean(channel_ind):
             print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             return remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
@@ -148,25 +152,43 @@ if __name__ == "__main__":
     end = time()
     print("Bandpass cleaned in %.4f seconds." % (end - start))
 
-    # import warnings
-    # warnings.filterwarnings("ignore")
-    #
-    # cleaned_block_files = []
-    #
-    #
-    # def threshold_hits(chan):
-    #     res = list()
-    #     window = data[:, channel_len*(chan):channel_len*(chan+1)]
-    #     # window_f = freqs[channel_len*(chan):channel_len*(chan+1)]
-    #     for i in range(0, (len(window[0])//200*200), 100):
-    #         test_data = window[:, i:i+200]
-    #         s, p = norm_test(test_data)
-    #         if p < 1e-25:
-    #             res.append([channel_len*(chan) + i, s, p])
-    #     return res
-    #
-    # start = time()
-    # with Pool(12) as p:
-    #     chan_hits = p.map(threshold_hits, range(14))
-    # end = time()
-    # print(end-start)
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    cleaned_block_files = [file for file in os.listdir(out_dir+"/cleaned") if file.endswith(".npy")]
+    filtered_dir = out_dir+"/filtered/"
+    if not os.path.isdir(filtered_dir):
+        os.mkdir(filtered_dir)
+
+    for block_file in tqdm(cleaned_block_files):
+        print("Loading %s from %s" % (block_file, out_dir+"/cleaned"))
+        data = np.load(out_dir+"/cleaned/" +block_file)
+        print("Processing %s" % block_file)
+        block_num = block_file.split(".")[0]
+        def threshold_hits(chan):
+            res = list()
+            window = data[:, coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
+            # window_f = freqs[coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
+            for i in range(0, (len(window[0])//200*200), 100):
+                test_data = window[:, i:i+200]
+                s, p = norm_test(test_data)
+                if p < threshold:
+                    res.append([coarse_channel_width*(chan) + i, s, p])
+            return res
+
+        start = time()
+        with Pool(min(num_chans, os.cpu_count())) as p:
+            chan_hits = p.map(threshold_hits, range(num_chans))
+        end = time()
+        print("%s Processed in %.4f seconds" %(block_file, end-start))
+        print("Saving results")
+        def save_stamps(channel_ind):
+            print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+            for res in chan_hits[chan]:
+                i, s, p = res
+                plt.imsave((filtered_dir+"%s_%d.png" % (block_num, i)), data[:, i:i+200])
+        start = time()
+        with Pool(min(num_chans, os.cpu_count())) as p:
+            p.map(save_stamps, range(num_chans))
+        end = time()
+        print("Results saved in %.4f seconds" % (end - start))
