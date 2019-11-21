@@ -165,6 +165,8 @@ if __name__ == "__main__":
         data = np.load(out_dir+"/cleaned/" +block_file)
         print("Processing %s" % block_file)
         block_num = block_file.split(".")[0]
+        if not os.path.isdir(filtered_dir+block_num):
+            os.mkdir(filtered_dir+block_num)
         def threshold_hits(channel_ind):
             res = list()
             window = data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)]
@@ -186,7 +188,7 @@ if __name__ == "__main__":
             print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             for res in chan_hits[channel_ind]:
                 i, s, p = res
-                plt.imsave((filtered_dir+"%s_%d.png" % (block_num, i)), data[:, i:i+200])
+                plt.imsave((filtered_dir+"%s/%d.png" % (block_num, i)), data[:, i:i+200])
         start = time()
         with Pool(min(num_chans, os.cpu_count())) as p:
             p.map(save_stamps, range(num_chans))
