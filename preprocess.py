@@ -78,6 +78,7 @@ def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
     if verbose:
         end = time()
         print("Removed broadband signals in %.4f seconds." % (end-start))
+    client.close()
 
 
 # def remove_bandpass(source_npy_path, coarse_channel_width=1033216):
