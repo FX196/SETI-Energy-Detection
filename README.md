@@ -1,5 +1,16 @@
 # Energy Detection and Signal Matching in SETI
 
+## TLDR
+
+Finding small slices of data like this:
+![](./imgs/filtered_1.png)
+
+this: ![](./imgs/filtered_2.png)
+
+and this: ![](./imgs/filtered_3.png)
+
+From huge amounts of data (10s of Gigabytes every 5 minutes), and then figuring out their type and origin. (Radios? Satillites? Microwave oven across the hall? Aliens?)
+
 ## Background
 
 (Skipping generic text about how important SETI is)
