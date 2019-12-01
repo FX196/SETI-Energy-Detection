@@ -14,7 +14,6 @@ from dask.distributed import Client
 
 from utils import *
 import dask.array as da
-import h5py
 import sys
 import os
 

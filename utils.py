@@ -2,6 +2,7 @@ from blimpy.utils import rebin
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy import stats, interpolate
+import h5py
 
 MAX_PLT_POINTS      = 65536                  # Max number of points in matplotlib plot
 MAX_IMSHOW_POINTS   = (8192, 4096)           # Max number of points in imshow plot
