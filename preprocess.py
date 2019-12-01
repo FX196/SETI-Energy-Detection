@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy import stats
 from blimpy import Waterfall
 from blimpy.utils import rebin
@@ -115,6 +116,11 @@ def gaussianity_thresholding():
 
 if __name__ == "__main__":
     input_file, out_dir = sys.argv[1:3]
+    header = read_header(input_file)
+    n_chans = header["nchans"]
+    i_vals = np.arange(n_chans)
+    freqs = header["foff"] * i_vals + header["fch1"]
+    block_width = num_chans * coarse_channel_width
     to_npy_stack(input_file, out_dir, True)
     remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
 
@@ -165,9 +171,9 @@ if __name__ == "__main__":
         print("Loading %s from %s" % (block_file, out_dir+"/cleaned"))
         data = np.load(out_dir+"/cleaned/" +block_file)
         print("Processing %s" % block_file)
-        block_num = block_file.split(".")[0]
-        if not os.path.isdir(filtered_dir+block_num):
-            os.mkdir(filtered_dir+block_num)
+        block_num = int(block_file.split(".")[0])
+        if not os.path.isdir(filtered_dir+str(block_num)):
+            os.mkdir(filtered_dir+str(block_num))
         def threshold_hits(channel_ind):
             res = list()
             window = data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)]
@@ -176,7 +182,7 @@ if __name__ == "__main__":
                 test_data = window[:, i:i+200]
                 s, p = norm_test(test_data)
                 if p < threshold:
-                    res.append([coarse_channel_width*(channel_ind) + i, s, p])
+                    res.append([block_num*block_width + coarse_channel_width*(channel_ind) + i, s, p])
             return res
 
         start = time()
@@ -184,12 +190,15 @@ if __name__ == "__main__":
             chan_hits = p.map(threshold_hits, range(num_chans))
         end = time()
         print("%s Processed in %.4f seconds" %(block_file, end-start))
+
+
+
         print("Saving results")
         def save_stamps(channel_ind):
             print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             for res in chan_hits[channel_ind]:
                 i, s, p = res
-                plt.imsave((filtered_dir+"%s/%d.png" % (block_num, i)), data[:, i:i+200])
+                plt.imsave((filtered_dir+"%d/%d.png" % (block_num, i)), data[:, i:i+200])
         start = time()
         with Pool(min(num_chans, os.cpu_count())) as p:
             p.map(save_stamps, range(num_chans))

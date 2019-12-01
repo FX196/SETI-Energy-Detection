@@ -14,6 +14,14 @@ plt_args = {
             'cmap':'viridis'
             }
 
+def read_header(filename):
+    header = {}
+    h5_file = h5py.File(filename, "r")
+    for key, val in h5_file['data'].attrs.items():
+        header[key] = val
+    h5_file.close()
+    return header
+
 def norm_test(arr):
     return stats.normaltest(arr.flatten())
 

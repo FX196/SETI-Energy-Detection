@@ -65,3 +65,7 @@ For comparision, here is the same section **with** the bandpass:
 And here is the original data, with broadband features and bandpass:
 
 ![original](./imgs/original_block.png)
+
+### Gaussianity Filtering
+
+We attempt to take narrow "stamps" covering 0.0005 Mhz each
