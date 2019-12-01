@@ -181,7 +181,7 @@ if __name__ == "__main__":
                 test_data = window[:, i:i+200]
                 s, p = norm_test(test_data)
                 if p < threshold:
-                    res.append([block_num*block_width + coarse_channel_width*(channel_ind) + i, s, p])
+                    res.append([coarse_channel_width*(channel_ind) + i, s, p])
             return res
 
         start = time()
@@ -197,7 +197,7 @@ if __name__ == "__main__":
             print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             for res in chan_hits[channel_ind]:
                 i, s, p = res
-                plt.imsave((filtered_dir+"%d/%d.png" % (block_num, i)), data[:, i:i+200])
+                plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
         start = time()
         with Pool(min(num_chans, os.cpu_count())) as p:
             p.map(save_stamps, range(num_chans))
