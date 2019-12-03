@@ -194,6 +194,7 @@ if __name__ == "__main__":
         print("%s Processed in %.4f seconds" %(block_file, end-start))
 
         vals_frame = pd.DataFrame(sum(chan_hits, []), columns=["index", "statistic", "pvalue"])
+        vals_frame["block_num"] = block_num
         vals_frame["index"] += block_num*block_width
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
