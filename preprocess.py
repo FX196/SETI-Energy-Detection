@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
         vals_frame = pd.DataFrame(sum(chan_hits, []), columns=["index", "statistic", "pvalue"])
         vals_frame["index"] += block_num*block_width
-        vals_frame["freqs"] = vals_frame["index"].apply(lambda x: freqs[x])
+        vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
 
         print("Saving results")
