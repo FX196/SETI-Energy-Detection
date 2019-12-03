@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 
         def clean(channel_ind):
-            print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             return remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
                            channels[channel_ind], coarse_channel_width)
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
         print("Saving results")
         def save_stamps(channel_ind):
-            print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             for res in chan_hits[channel_ind]:
                 i, s, p = res
                 #plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
