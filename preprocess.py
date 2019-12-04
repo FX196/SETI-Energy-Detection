@@ -187,9 +187,19 @@ if __name__ == "__main__":
                     res.append([coarse_channel_width*(channel_ind) + i, s, p])
             return res
 
+        def calc_stats(channel_ind):
+            res = list()
+            window = data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)]
+            # window_f = freqs[coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
+            for i in range(0, (len(window[0])//200*200), 100):
+                test_data = window[:, i:i+200]
+                s, p = norm_test(test_data)
+                res.append([coarse_channel_width*(channel_ind) + i, s, p])
+            return res
+
         start = time()
         with Pool(min(num_chans, os.cpu_count())) as p:
-            chan_hits = p.map(threshold_hits, range(num_chans))
+            chan_hits = p.map(calc_stats, range(num_chans))
         end = time()
         print("%s Processed in %.4f seconds" %(block_file, end-start))
 
@@ -199,18 +209,18 @@ if __name__ == "__main__":
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
 
-        print("Saving results")
-        def save_stamps(channel_ind):
-            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-            for res in chan_hits[channel_ind]:
-                i, s, p = res
-                #plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-                np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        start = time()
-        with Pool(min(num_chans, os.cpu_count())) as p:
-            p.map(save_stamps, range(num_chans))
-        end = time()
-        print("Results saved in %.4f seconds" % (end - start))
+        # print("Saving results")
+        # def save_stamps(channel_ind):
+        #     # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+        #     for res in chan_hits[channel_ind]:
+        #         i, s, p = res
+        #         #plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        #         np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        # start = time()
+        # with Pool(min(num_chans, os.cpu_count())) as p:
+        #     p.map(save_stamps, range(num_chans))
+        # end = time()
+        # print("Results saved in %.4f seconds" % (end - start))
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
