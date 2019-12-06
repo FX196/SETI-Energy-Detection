@@ -11,6 +11,7 @@ import h5py
 from time import time
 from multiprocessing import Pool, current_process
 from dask.distributed import Client
+import pickle
 
 from utils import *
 import dask.array as da
@@ -121,6 +122,8 @@ if __name__ == "__main__":
     freqs = header["foff"] * i_vals + header["fch1"]
     block_width = num_chans * coarse_channel_width
     to_npy_stack(input_file, out_dir, True)
+    with open(out_dir+"/header.pkl", "wb") as f:
+        pickle.dump(header, f)
     remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
 
     source_npy_path = out_dir+"/normalized"
@@ -224,4 +227,4 @@ if __name__ == "__main__":
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
-    full_df.to_pickle(out_dir + "/info.pkl")
+    full_df.to_pickle(out_dir + "/info_pd.pkl")
