@@ -227,4 +227,4 @@ if __name__ == "__main__":
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
-    full_df.to_pickle(out_dir + "/info_pd.pkl")
+    full_df.to_pickle(out_dir + "/info_df.pkl")
