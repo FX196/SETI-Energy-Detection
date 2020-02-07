@@ -5,3 +5,6 @@ original_a/
 normalized_a/
 /data
 .DS_Store
+*.npy
+info_all.pkl
+GBT_57532_09539_HIP56445_fine/
