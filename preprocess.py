@@ -54,8 +54,9 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
         print("Converting to npy stack")
     h5_file = h5py.File(source_h5_path, "r")
     arr = da.from_array(h5_file["data"], chunks=(2, 1, channel_len * 14))
-    if not os.path.isdir(dest_path+"/original"):
+    if not os.path.isdir(dest_path):
         os.mkdir(dest_path)
+    if not os.path.isdir(dest_path+"/original"):
         os.mkdir(dest_path+"/original")
     da.to_npy_stack(dest_path+"/original", arr, axis=2)
     if verbose:
@@ -139,9 +140,13 @@ if __name__ == "__main__":
         print("loading %s from %s" % (block_file, source_npy_path))
         block_data = np.load(source_npy_path+"/"+block_file)
         block_data = block_data[:, 0, :]
+        half_chan = coarse_channel_width/2
+        for i in range(num_chans):      # remove dc spike
+            dc_ind = int(i*coarse_channel_width + half_chan)
+            block_data[:, dc_ind] = (block_data[:, dc_ind+1] + block_data[:, dc_ind-3])/2
+            block_data[:, dc_ind-1] = (block_data[:, dc_ind+2] + block_data[:, dc_ind-2])/2
+
         integrated = np.mean(block_data, axis=0)
-        for n in np.nonzero(integrated > 800):                          # remove DC spike
-            integrated[n] = (integrated[n-1] + integrated[n+1]) /2
         channels = np.reshape(integrated, (-1, coarse_channel_width))
 
 
