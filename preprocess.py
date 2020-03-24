@@ -35,12 +35,12 @@ plt_args = {
 
 
 # Hyperparameters
-coarse_channel_width=1033216
+coarse_channel_width=1048576
 threshold = 1e-40
 num_chans = 14
 
 
-def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1033216):
+def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
     """
     Convert original h5 file to npy stack
 
