@@ -121,7 +121,7 @@ if __name__ == "__main__":
     n_chans = header["nchans"]
     i_vals = np.arange(n_chans)
     freqs = header["foff"] * i_vals + header["fch1"]
-    block_width = num_chans * coarse_channel_width
+    block_width = num_chans_per_block * coarse_channel_width
     to_npy_stack(input_file, out_dir, True)
     with open(out_dir+"/header.pkl", "wb") as f:
         pickle.dump(header, f)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         block_data = np.load(source_npy_path+"/"+block_file)
         block_data = block_data[:, 0, :]
         half_chan = coarse_channel_width/2
-        for i in range(num_chans):      # remove dc spike
+        for i in range(num_chans_per_block):      # remove dc spike
             dc_ind = int(i*coarse_channel_width + half_chan)
             block_data[:, dc_ind] = (block_data[:, dc_ind+1] + block_data[:, dc_ind-3])/2
             block_data[:, dc_ind-1] = (block_data[:, dc_ind+2] + block_data[:, dc_ind-2])/2
@@ -207,8 +207,8 @@ if __name__ == "__main__":
         #     return res
 
         start = time()
-        with Pool(min(num_chans, os.cpu_count())) as p:
-            chan_hits = p.map(threshold_hits, range(num_chans))
+        with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+            chan_hits = p.map(threshold_hits, range(num_chans_per_block))
         end = time()
         print("%s Processed in %.4f seconds" %(block_file, end-start))
 
@@ -226,8 +226,8 @@ if __name__ == "__main__":
                 # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
                 np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
         start = time()
-        with Pool(min(num_chans, os.cpu_count())) as p:
-            p.map(save_stamps, range(num_chans))
+        with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+            p.map(save_stamps, range(num_chans_per_block))
         end = time()
         print("Results saved in %.4f seconds" % (end - start))
 
