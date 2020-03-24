@@ -36,7 +36,7 @@ plt_args = {
 
 # Hyperparameters
 coarse_channel_width=1048576
-threshold = 1e-40
+threshold = 1e-60
 num_chans_per_block = 28
 
 
@@ -111,12 +111,12 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
 #         normalized = np.concatenate(normalized, axis=1)
 #         np.save(source_npy_path+"/"+block_file.split(".")[0]+"_cleaned.npy", normalized)
 
-
-def gaussianity_thresholding():
-    pass
-
 if __name__ == "__main__":
-    input_file, out_dir = sys.argv[1:3]
+    input_file = sys.argv[1]
+    if len(sys.argv == 2):
+        out_dir = input_file[:-3]
+    else:
+        out_dir = sys.argv[2]
     header = read_header(input_file)
     n_chans = header["nchans"]
     i_vals = np.arange(n_chans)
