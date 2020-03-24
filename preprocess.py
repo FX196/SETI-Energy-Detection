@@ -189,7 +189,7 @@ if __name__ == "__main__":
             res = list()
             window = data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)]
             # window_f = freqs[coarse_channel_width*(chan):coarse_channel_width*(chan+1)]
-            for i in range(0, (len(window[0])//200*200), 100):
+            for i in range(0, (len(window[0])//200*200) - 100, 100):
                 test_data = window[:, i:i+200]
                 s, p = norm_test(test_data)
                 if p < threshold:
