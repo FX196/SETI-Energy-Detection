@@ -64,23 +64,23 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
         print("Converted to npy stack in %.4f seconds." % (end-start))
 
 
-def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
-    client = Client(processes=True, threads_per_worker=3, n_workers=os.cpu_count()//3, memory_limit='8GB')
-
-    if verbose:
-        start = time()
-        print("Removing broadband signals")
-
-    a = da.from_npy_stack(source_npy_path)
-    means = da.mean(a, axis=2)
-    means = da.reshape(means, (16,1,1))     # reshape to fit original data dimensions
-    normalized_a = da.divide(a, means)      # divide by mean
-    da.to_npy_stack(dest_npy_path, normalized_a, axis=2)    # write to npy stack
-
-    if verbose:
-        end = time()
-        print("Removed broadband signals in %.4f seconds." % (end-start))
-    client.close()
+# def remove_broadband(source_npy_path, dest_npy_path, verbose=False):
+#     client = Client(processes=True, threads_per_worker=3, n_workers=os.cpu_count()//3, memory_limit='8GB')
+#
+#     if verbose:
+#         start = time()
+#         print("Removing broadband signals")
+#
+#     a = da.from_npy_stack(source_npy_path)
+#     means = da.mean(a, axis=2)
+#     means = da.reshape(means, (16,1,1))     # reshape to fit original data dimensions
+#     normalized_a = da.divide(a, means)      # divide by mean
+#     da.to_npy_stack(dest_npy_path, normalized_a, axis=2)    # write to npy stack
+#
+#     if verbose:
+#         end = time()
+#         print("Removed broadband signals in %.4f seconds." % (end-start))
+#     client.close()
 
 
 # def remove_bandpass(source_npy_path, coarse_channel_width=1033216):
@@ -125,10 +125,10 @@ if __name__ == "__main__":
     to_npy_stack(input_file, out_dir, True)
     with open(out_dir+"/header.pkl", "wb") as f:
         pickle.dump(header, f)
-    remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
+    # remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
 
-    source_npy_path = out_dir+"/normalized"
-    block_files = [file for file in os.listdir(out_dir+"/normalized") if file.endswith(".npy")]
+    source_npy_path = out_dir+"/original"
+    block_files = [file for file in os.listdir(source_npy_path) if file.endswith(".npy")]
     cleaned_dir = out_dir+"/cleaned"
 
     if not os.path.isdir(cleaned_dir):
@@ -152,8 +152,10 @@ if __name__ == "__main__":
 
         def clean(channel_ind):
             # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-            return remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
+            cleaned_block =  remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
                            channels[channel_ind], coarse_channel_width)
+            print(cleaned_block.shape)
+            return cleaned_block
 
         def normalize_block():
             with Pool(min(14, os.cpu_count())) as p:
