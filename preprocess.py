@@ -37,7 +37,7 @@ plt_args = {
 # Hyperparameters
 coarse_channel_width=1048576
 threshold = 1e-40
-num_chans = 14
+num_chans_per_block = 28
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
@@ -53,7 +53,7 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
         start = time()
         print("Converting to npy stack")
     h5_file = h5py.File(source_h5_path, "r")
-    arr = da.from_array(h5_file["data"], chunks=(2, 1, channel_len * 14))
+    arr = da.from_array(h5_file["data"], chunks=(2, 1, channel_len * num_chans_per_block))
     if not os.path.isdir(dest_path):
         os.mkdir(dest_path)
     if not os.path.isdir(dest_path+"/original"):
@@ -157,8 +157,8 @@ if __name__ == "__main__":
             return cleaned_block / np.sum(cleaned_block, axis=1, keepdims=True)
 
         def normalize_block():
-            with Pool(min(14, os.cpu_count())) as p:
-                cleaned = p.map(clean, range(14))
+            with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+                cleaned = p.map(clean, range(num_chans_per_block))
             return cleaned
         normalized = normalize_block()
         normalized = np.concatenate(normalized, axis=1)
