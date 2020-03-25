@@ -18,6 +18,9 @@ import dask.array as da
 import sys
 import os
 
+if "cupy" in sys.modules:
+    import cupy as np
+
 fil_path = "data/filterbanks/"
 h5_path = "data/h5/"
 
