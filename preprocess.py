@@ -154,7 +154,7 @@ if __name__ == "__main__":
             # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             cleaned_block =  remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
                            channels[channel_ind], coarse_channel_width)
-            return cleaned_block / np.sum(cleaned_block, axis=1, keepdims=True)
+            return cleaned_block / np.mean(cleaned_block, axis=1, keepdims=True)
 
         def normalize_block():
             with Pool(min(num_chans_per_block, os.cpu_count())) as p:
