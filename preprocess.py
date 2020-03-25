@@ -36,7 +36,7 @@ plt_args = {
 
 # Hyperparameters
 coarse_channel_width=1048576
-threshold = 1e-60
+threshold = 1e-80
 num_chans_per_block = 28
 
 
@@ -113,7 +113,7 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
 
 if __name__ == "__main__":
     input_file = sys.argv[1]
-    if len(sys.argv == 2):
+    if len(sys.argv) == 2:
         out_dir = input_file[:-3]
     else:
         out_dir = sys.argv[2]
