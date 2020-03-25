@@ -41,7 +41,7 @@ plt_args = {
 # Hyperparameters
 coarse_channel_width=1048576
 threshold = 1e-80
-num_chans_per_block = 28
+num_chans_per_block = 7
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
@@ -125,8 +125,9 @@ if __name__ == "__main__":
     n_chans = header["nchans"]
     i_vals = np.arange(n_chans)
     freqs = header["foff"] * i_vals + header["fch1"]
+    coarse_channel_width = int((1500 / 512) / header["foff"])
     block_width = num_chans_per_block * coarse_channel_width
-    to_npy_stack(input_file, out_dir, True)
+    to_npy_stack(input_file, out_dir, True, coarse_channel_width)
     with open(out_dir+"/header.pkl", "wb") as f:
         pickle.dump(header, f)
         print("Header saved to "+out_dir+"/header.pkl")
