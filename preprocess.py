@@ -20,6 +20,7 @@ import os
 
 if "cupy" in sys.modules:
     import cupy as np
+    print("Using cupy")
 
 fil_path = "data/filterbanks/"
 h5_path = "data/h5/"
@@ -128,6 +129,7 @@ if __name__ == "__main__":
     to_npy_stack(input_file, out_dir, True)
     with open(out_dir+"/header.pkl", "wb") as f:
         pickle.dump(header, f)
+        print("Header saved to "+out_dir+"/header.pkl")
     # remove_broadband(out_dir+"/original", out_dir+"/normalized", True)
 
     source_npy_path = out_dir+"/original"
@@ -142,6 +144,7 @@ if __name__ == "__main__":
     for block_file in tqdm(block_files):
         print("loading %s from %s" % (block_file, source_npy_path))
         block_data = np.load(source_npy_path+"/"+block_file)
+        print("%s loaded, processing" % block_file)
         block_data = block_data[:, 0, :]
         half_chan = coarse_channel_width/2
         for i in range(num_chans_per_block):      # remove dc spike
