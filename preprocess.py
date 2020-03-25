@@ -18,9 +18,9 @@ import dask.array as da
 import sys
 import os
 
-if "cupy" in sys.modules:
-    import cupy as np
-    print("Using cupy")
+# if "cupy" in sys.modules:
+#     import cupy as np
+#     print("Using cupy")
 
 fil_path = "data/filterbanks/"
 h5_path = "data/h5/"
