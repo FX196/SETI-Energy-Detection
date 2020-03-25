@@ -218,18 +218,18 @@ if __name__ == "__main__":
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
 
-        print("Saving results")
-        def save_stamps(channel_ind):
-            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-            for res in chan_hits[channel_ind]:
-                i, s, p = res
-                # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-                np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        start = time()
-        with Pool(min(num_chans_per_block, os.cpu_count())) as p:
-            p.map(save_stamps, range(num_chans_per_block))
-        end = time()
-        print("Results saved in %.4f seconds" % (end - start))
+        # print("Saving results")
+        # def save_stamps(channel_ind):
+        #     # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+        #     for res in chan_hits[channel_ind]:
+        #         i, s, p = res
+        #         # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        #         np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        # start = time()
+        # with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+        #     p.map(save_stamps, range(num_chans_per_block))
+        # end = time()
+        # print("Results saved in %.4f seconds" % (end - start))
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
