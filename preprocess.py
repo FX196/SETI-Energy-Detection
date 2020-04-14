@@ -18,16 +18,6 @@ import dask.array as da
 import sys
 import os
 
-if "cupy" in sys.modules:
-    import cupy as np
-    print("Using cupy")
-
-fil_path = "data/filterbanks/"
-h5_path = "data/h5/"
-
-test_fil = fil_path + "blc20_guppi_57991_48899_3C161_0007.gpuspec.0000.fil"
-
-fri_obs = h5_path + "GBT_57532_09539_HIP56445_fine.h5"
 
 plt_args = {
     'aspect': 'auto',
@@ -41,7 +31,7 @@ plt_args = {
 # Hyperparameters
 coarse_channel_width=1048576
 threshold = 1e-80
-num_chans_per_block = 28
+num_chans_per_block = 7
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
@@ -160,7 +150,7 @@ if __name__ == "__main__":
             # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             cleaned_block =  remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
                            channels[channel_ind], coarse_channel_width)
-            return cleaned_block / np.mean(cleaned_block, axis=1, keepdims=True)
+            return cleaned_block # / np.mean(cleaned_block, axis=1, keepdims=True)
 
         def normalize_block():
             with Pool(min(num_chans_per_block, os.cpu_count())) as p:
@@ -223,19 +213,18 @@ if __name__ == "__main__":
         vals_frame["index"] += block_num*block_width
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
-
-        # print("Saving results")
-        # def save_stamps(channel_ind):
-        #     # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-        #     for res in chan_hits[channel_ind]:
-        #         i, s, p = res
-        #         # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        #         np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        # start = time()
-        # with Pool(min(num_chans_per_block, os.cpu_count())) as p:
-        #     p.map(save_stamps, range(num_chans_per_block))
-        # end = time()
-        # print("Results saved in %.4f seconds" % (end - start))
+        
+        def save_stamps(channel_ind):
+            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+            for res in chan_hits[channel_ind]:
+                i, s, p = res
+                # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+                np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        start = time()
+        with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+            p.map(save_stamps, range(num_chans_per_block))
+        end = time()
+        print("Results saved in %.4f seconds" % (end - start))
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
