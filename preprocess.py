@@ -41,7 +41,9 @@ plt_args = {
 # Hyperparameters
 coarse_channel_width=1048576
 threshold = 1e-80
-num_chans_per_block = 7
+stat_threshold = 2048
+num_chans_per_block = 28
+block_width = num_chans_per_block * coarse_channel_width
 
 
 def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
@@ -57,6 +59,7 @@ def to_npy_stack(source_h5_path, dest_path, verbose=False, channel_len=1048576):
         start = time()
         print("Converting to npy stack")
     h5_file = h5py.File(source_h5_path, "r")
+    print(channel_len * num_chans_per_block)
     arr = da.from_array(h5_file["data"], chunks=(2, 1, channel_len * num_chans_per_block))
     if not os.path.isdir(dest_path):
         os.mkdir(dest_path)
@@ -125,9 +128,7 @@ if __name__ == "__main__":
     n_chans = header["nchans"]
     i_vals = np.arange(n_chans)
     freqs = header["foff"] * i_vals + header["fch1"]
-    coarse_channel_width = int((1500 / 512) / header["foff"])
-    block_width = num_chans_per_block * coarse_channel_width
-    to_npy_stack(input_file, out_dir, True, coarse_channel_width)
+    to_npy_stack(input_file, out_dir, True)
     with open(out_dir+"/header.pkl", "wb") as f:
         pickle.dump(header, f)
         print("Header saved to "+out_dir+"/header.pkl")
@@ -161,7 +162,7 @@ if __name__ == "__main__":
             # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
             cleaned_block =  remove_channel_bandpass(block_data[:, coarse_channel_width*(channel_ind):coarse_channel_width*(channel_ind+1)],
                            channels[channel_ind], coarse_channel_width)
-            return cleaned_block / np.mean(cleaned_block, axis=1, keepdims=True)
+            return cleaned_block
 
         def normalize_block():
             with Pool(min(num_chans_per_block, os.cpu_count())) as p:
@@ -199,7 +200,7 @@ if __name__ == "__main__":
             for i in range(0, (len(window[0])//200*200) - 100, 100):
                 test_data = window[:, i:i+200]
                 s, p = norm_test(test_data)
-                if p < threshold:
+                if s > stat_threshold:
                     res.append([coarse_channel_width*(channel_ind) + i, s, p])
             return res
 
@@ -225,18 +226,18 @@ if __name__ == "__main__":
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
 
-        # print("Saving results")
-        # def save_stamps(channel_ind):
-        #     # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-        #     for res in chan_hits[channel_ind]:
-        #         i, s, p = res
-        #         # plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        #         np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
-        # start = time()
-        # with Pool(min(num_chans_per_block, os.cpu_count())) as p:
-        #     p.map(save_stamps, range(num_chans_per_block))
-        # end = time()
-        # print("Results saved in %.4f seconds" % (end - start))
+        print("Saving results")
+        def save_stamps(channel_ind):
+            # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
+            for res in chan_hits[channel_ind]:
+                i, s, p = res
+                plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+                # np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
+        start = time()
+        with Pool(min(num_chans_per_block, os.cpu_count())) as p:
+            p.map(save_stamps, range(num_chans_per_block))
+        end = time()
+        print("Results saved in %.4f seconds" % (end - start))
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
