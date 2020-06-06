@@ -68,4 +68,20 @@ And here is the original data, with broadband features and bandpass:
 
 ### Gaussianity Filtering
 
-We attempt to take narrow "stamps" covering 0.0005 Mhz each
+We attempt to take narrow "stamps" covering 0.0005 Mhz each. These "stamps" are essentially slices of the data that are 16 by 200 elements. Based on a priori knowledge, we can assume that the background noise received by the telescope is gaussian noise. Therefore, if a stamp deviates from a gaussian distribution, or has excess energy, it is likely to contain a signal.
+
+We use `scipy.stats.normaltest`, which implements D’Agostino and Pearson’s omnibus test for normality to calculate a statistic and the corresponding p-value. A higher statistic, or a lower p-value means a larger deviation from gaussian noise. Because the calculated p-values are often too small to be represented with floating point numbers, we use the statistic for filtering. For now, we use a threshold of 2048 because it yields a reasonable amount of samples after filtering.
+
+Plotting a histogram of the statistic value of sample stamps from the data confirms our intuition that the number of samples in ranges of equal length decreases as the statistic value increases. This means that as samples deviate further from gaussian, the likelihood of that sample being seen decreases.
+
+![](./imgs/stat_plot.png)
+
+We also show some sample stamps with differing statistic values to illustrate the relationship between the statistic and the detected signal. Below are three sample stamps with increasing statistic values.
+
+![](./imgs/2.287.png)
+
+![](./imgs/3.047.png)
+
+![](./imgs/5.596.png)
+
+The first sample with a statistic of around 2000 depicts a single drifting signal that is in the same range of intensity as the background noise (as the noise is clearly visible). The second sample with higher statistic value shows multiple narrowband signals that are relatively stronger, as the background is darker compared to the first sample. While the last sample shows the background as completely dark, meaning that the shown signals have much larger intensity.
