@@ -33,6 +33,9 @@ if __name__ == "__main__":
     else:
         out_dir = sys.argv[2]
 
+    if not os.path.isdir(out_dir):
+        os.mkdir(out_dir)
+
     # read and store the header
     header = read_header(input_file)
     n_chans = header["nchans"]
@@ -132,4 +135,4 @@ if __name__ == "__main__":
     full_df.to_pickle(out_dir + "/info_df.pkl")
     if save_npy:
         full_stack = np.concatenate(stack_list)
-        np.save("filtered.npy", full_stack)
+        np.save(out_dir + "filtered.npy", full_stack)
