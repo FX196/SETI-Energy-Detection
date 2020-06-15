@@ -80,6 +80,8 @@ if __name__ == "__main__":
                 cleaned = p.map(clean, range(parallel_coarse_chans))
             return cleaned
 
+        del block_data
+
         cleaned_block_data = clean_block_bandpass()
         cleaned_block_data = np.concatenate(cleaned_block_data, axis=1)
         # np.save(out_dir+"/cleaned/" + block_file, normalized)
@@ -132,6 +134,9 @@ if __name__ == "__main__":
                     stack_list.append(np.concatenate(stack, axis=0))
         end = time()
         print("Results saved in %.4f seconds" % (end - start))
+        del integrated
+        del channels
+        del cleaned_block_data
 
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
