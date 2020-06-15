@@ -127,9 +127,9 @@ if __name__ == "__main__":
             #     p.map(save_stamps, range(parallel_coarse_chans))
             if save_npy:
                 stack = p.map(aggregate_npy, range(parallel_coarse_chans))
-                for s in stack:
-                    print(s.shape)
-                stack_list.append(np.concatenate(stack, axis=0))
+                stack = [e for e in stack if e.size != 0]
+                if stack:
+                    stack_list.append(np.concatenate(stack, axis=0))
         end = time()
         print("Results saved in %.4f seconds" % (end - start))
 
