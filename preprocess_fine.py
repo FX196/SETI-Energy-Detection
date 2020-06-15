@@ -80,7 +80,6 @@ if __name__ == "__main__":
                 cleaned = p.map(clean, range(parallel_coarse_chans))
             return cleaned
 
-        del block_data
 
         cleaned_block_data = clean_block_bandpass()
         cleaned_block_data = np.concatenate(cleaned_block_data, axis=1)
@@ -88,6 +87,8 @@ if __name__ == "__main__":
 
         end = time()
         print("Bandpass cleaned in %.4f seconds." % (end - start))
+
+        del block_data
 
         # actual energy detection
         def threshold_hits(channel_ind):
