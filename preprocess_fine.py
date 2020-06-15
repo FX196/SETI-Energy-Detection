@@ -23,6 +23,7 @@ threshold = 1e-80
 stat_threshold = 2048
 parallel_coarse_chans = 28 # number of coarse channels operated on in parallel
 num_blocks = 308 // parallel_coarse_chans
+block_width = coarse_channel_width * parallel_coarse_chans
 save_png = False
 save_npy = True
 
