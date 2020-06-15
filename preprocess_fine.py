@@ -101,7 +101,7 @@ if __name__ == "__main__":
         with Pool(min(parallel_coarse_chans, os.cpu_count())) as p:
             chan_hits = p.map(threshold_hits, range(parallel_coarse_chans))
         end = time()
-        print("%s Stamps filtered in %.4f seconds" %(block_file, end-start))
+        print("Stamps filtered in %.4f seconds" %(end-start))
 
         vals_frame = pd.DataFrame(sum(chan_hits, []), columns=["index", "statistic", "pvalue"])
         vals_frame["block_num"] = block_num
