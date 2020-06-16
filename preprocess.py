@@ -22,13 +22,6 @@ import os
 #     import cupy as np
 #     print("Using cupy")
 
-fil_path = "data/filterbanks/"
-h5_path = "data/h5/"
-
-test_fil = fil_path + "blc20_guppi_57991_48899_3C161_0007.gpuspec.0000.fil"
-
-fri_obs = h5_path + "GBT_57532_09539_HIP56445_fine.h5"
-
 plt_args = {
     'aspect': 'auto',
     'origin': 'lower',

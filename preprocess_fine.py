@@ -133,6 +133,7 @@ if __name__ == "__main__":
                 stack = [e for e in stack if e.size != 0]
                 if stack:
                     stack_list.append(np.concatenate(stack, axis=0))
+                print(f"{len(stack_list)}")
         end = time()
         print("Results saved in %.4f seconds" % (end - start))
         del integrated
@@ -142,6 +143,7 @@ if __name__ == "__main__":
     full_df = pd.concat(frame_list, ignore_index=True)
     full_df.set_index("index")
     full_df.to_pickle(out_dir + "/info_df.pkl")
-    if save_npy:
+
+    if stack_list:
         full_stack = np.concatenate(stack_list)
         np.save(out_dir + "filtered.npy", full_stack)
