@@ -1,0 +1,8 @@
+scipy
+numpy
+pandas
+matplotlib
+h5py
+blimpy
+tqdm
+dask[complete]
