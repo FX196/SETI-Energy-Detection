@@ -2,7 +2,7 @@ scipy
 numpy
 pandas
 matplotlib
-h5py
+h5py --no-binary=h5py
 blimpy
 tqdm
 dask[complete]
