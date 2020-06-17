@@ -47,13 +47,14 @@ if __name__ == "__main__":
         print("Header saved to "+out_dir+"/header.pkl")
 
     hf = h5py.File(input_file, "r")
+    full_arr = hf["data"][:]
 
     frame_list = []
     stack_list = []
 
     for block_num in tqdm(range(num_blocks)):
         print(f"Processing coarse channels {block_num * parallel_coarse_chans}-{(block_num + 1) * parallel_coarse_chans}")
-        block_data = hf["data"][:, 0,
+        block_data = full_arr[:, 0,
         block_num*parallel_coarse_chans*coarse_channel_width:
         (block_num+1)*parallel_coarse_chans*coarse_channel_width]
         print("Data loaded, processing")
@@ -146,4 +147,4 @@ if __name__ == "__main__":
 
     if stack_list:
         full_stack = np.concatenate(stack_list)
-        np.save(out_dir + "filtered.npy", full_stack)
+        np.save(out_dir + "/filtered.npy", full_stack)
