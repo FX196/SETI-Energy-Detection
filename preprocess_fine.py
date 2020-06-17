@@ -28,6 +28,7 @@ save_png = False
 save_npy = True
 
 if __name__ == "__main__":
+    g_start = time()
     input_file = sys.argv[1]
     if len(sys.argv) == 2:
         out_dir = input_file.split(".")[0]
@@ -46,8 +47,11 @@ if __name__ == "__main__":
         pickle.dump(header, f)
         print("Header saved to "+out_dir+"/header.pkl")
 
+    start = time()
     hf = h5py.File(input_file, "r")
     full_arr = hf["data"][:]
+    end = time()
+    print("File read in %.4f seconds." % (end - start))
 
     frame_list = []
     stack_list = []
@@ -109,7 +113,6 @@ if __name__ == "__main__":
         print("Stamps filtered in %.4f seconds" %(end-start))
 
         vals_frame = pd.DataFrame(sum(chan_hits, []), columns=["index", "statistic", "pvalue"])
-        vals_frame["block_num"] = block_num
         vals_frame["index"] += block_num*block_width
         vals_frame["freqs"] = vals_frame["index"].map(lambda x: freqs[x])
         frame_list.append(vals_frame)
@@ -134,9 +137,8 @@ if __name__ == "__main__":
                 stack = [e for e in stack if e.size != 0]
                 if stack:
                     stack_list.append(np.concatenate(stack, axis=0))
-                print(f"{len(stack_list)}")
         end = time()
-        print("Results saved in %.4f seconds" % (end - start))
+        print("Results aggregated in %.4f seconds" % (end - start))
         del integrated
         del channels
         del cleaned_block_data
@@ -148,3 +150,6 @@ if __name__ == "__main__":
     if stack_list:
         full_stack = np.concatenate(stack_list)
         np.save(out_dir + "/filtered.npy", full_stack)
+
+    g_end = time()
+    print("Finished Energy Detection on %s in %.4f seconds" % (os.path.basename(input_file), g_end - g_start)
