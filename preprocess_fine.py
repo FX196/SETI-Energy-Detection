@@ -152,4 +152,4 @@ if __name__ == "__main__":
         np.save(out_dir + "/filtered.npy", full_stack)
 
     g_end = time()
-    print("Finished Energy Detection on %s in %.4f seconds" % (os.path.basename(input_file), g_end - g_start)
+    print("Finished Energy Detection on %s in %.4f seconds" % (os.path.basename(input_file), g_end - g_start))
