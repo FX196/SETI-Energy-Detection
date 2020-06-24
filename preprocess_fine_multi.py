@@ -1,4 +1,5 @@
 import numpy as np
+import hdf5plugin
 import pandas as pd
 from scipy import stats
 from matplotlib import pyplot as plt
@@ -30,18 +31,17 @@ save_npy = True
 
 
 
-def read_h5_block_sub(block_num, sub):
+def read_h5_block_sub(block_num,  input_file, sub):
     #Each process that a core will read 
     #the data is indexed with the help of the routine function. 
     coarse_channel_width=1048576
     threshold = 1e-80
     stat_threshold = 2048
-    parallel_coarse_chans = 28 
+    parallel_coarse_chans = 28 # number of coarse channels operated on in parallel
     num_blocks = 308 // parallel_coarse_chans
-    #Creates a set of indexes that will be loaded by each core. 
     routine = create_routine(cores =7, block_num =block_num , coarse_channel_width = coarse_channel_width)
     block_width = coarse_channel_width * parallel_coarse_chans
-    h5 = h5py.File("GBT_58010_50176_HIP61317_fine.h5",'r')
+    h5 = h5py.File(input_file,'r')
     return h5.get('data')[:, 0, routine[block_num][sub]:routine[block_num][sub]+(4*coarse_channel_width)]
     
     
@@ -59,12 +59,12 @@ def create_routine(cores, block_num, coarse_channel_width):
         routine.append(temp)
     return routine
 
-def multiprocess_reading(block_num):
+def multiprocess_reading(block_num, input_file):
     # Wrapped all the multiprocessing functions in one big function
     a_pool = multiprocessing.Pool()
     core = 7
     sub = [range(core)]
-    func = partial(read_h5_block_sub,block_num)
+    func = partial(read_h5_block_sub,block_num, input_file)
     data = a_pool.map(func, range(core))
     a_pool.close()
     a_pool.join()
@@ -98,8 +98,6 @@ if __name__ == "__main__":
         pickle.dump(header, f)
         print("Header saved to "+out_dir+"/header.pkl")
 
-    hf = h5py.File(input_file, "r")
-
     frame_list = []
     stack_list = []
 
@@ -109,7 +107,7 @@ if __name__ == "__main__":
         #Replaced the original read with a multiprocess_reading
         #I had wrapped it around multiple functions to make it one line
         print("Reading in a chunk of data...")
-        block_data = re_shape_input(np.array(multiprocess_reading(block_num)))
+        block_data = re_shape_input(np.array(multiprocess_reading(block_num,input_file)))
         end = time()
         print(f"Data loaded in {end - start:.4f} seconds, processing")
 
