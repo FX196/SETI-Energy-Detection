@@ -108,6 +108,7 @@ if __name__ == "__main__":
         start = time()
         #Replaced the original read with a multiprocess_reading
         #I had wrapped it around multiple functions to make it one line
+        print("Reading in a chunk of data...")
         block_data = re_shape_input(np.array(multiprocess_reading(block_num)))
         end = time()
         print(f"Data loaded in {end - start:.4f} seconds, processing")
