@@ -8,11 +8,11 @@ import h5py
 from time import time
 from multiprocessing import Pool, current_process
 import pickle
-
+import multiprocessing
 from utils import *
 import sys
 import os
-
+from functools import partial
 # if "cupy" in sys.modules:
 #     import cupy as np
 #     print("Using cupy")
