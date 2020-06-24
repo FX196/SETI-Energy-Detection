@@ -31,11 +31,14 @@ save_npy = True
 
 
 def read_h5_block_sub(block_num, sub):
+    #Each process that a core will read 
+    #the data is indexed with the help of the routine function. 
     coarse_channel_width=1048576
     threshold = 1e-80
     stat_threshold = 2048
-    parallel_coarse_chans = 28 # number of coarse channels operated on in parallel
+    parallel_coarse_chans = 28 
     num_blocks = 308 // parallel_coarse_chans
+    #Creates a set of indexes that will be loaded by each core. 
     routine = create_routine(cores =7, block_num =block_num , coarse_channel_width = coarse_channel_width)
     block_width = coarse_channel_width * parallel_coarse_chans
     h5 = h5py.File("GBT_58010_50176_HIP61317_fine.h5",'r')
@@ -43,6 +46,8 @@ def read_h5_block_sub(block_num, sub):
     
     
 def create_routine(cores, block_num, coarse_channel_width):
+    # Creates a list of numpy index which are routines
+    #that the cores will individually read
     cores = 7
     block_num = 11
     routine_temp = []
@@ -55,6 +60,7 @@ def create_routine(cores, block_num, coarse_channel_width):
     return routine
 
 def multiprocess_reading(block_num):
+    # Wrapped all the multiprocessing functions in one big function
     a_pool = multiprocessing.Pool()
     core = 7
     sub = [range(core)]
@@ -65,6 +71,7 @@ def multiprocess_reading(block_num):
     return data
 
 def re_shape_input(data):
+    #Reshapes the stacked 3d Tensor and spreads it to a 2d matrix 
     result_data = np.zeros((data.shape[1],data.shape[0]*data.shape[2] ))
     for i in range(data.shape[0]):
         result_data[:,i*data.shape[2]:data.shape[2]*(i+1)]=data[i,:,:]
@@ -99,8 +106,9 @@ if __name__ == "__main__":
     for block_num in tqdm(range(num_blocks)):
         print(f"Processing coarse channels {block_num * parallel_coarse_chans}-{(block_num + 1) * parallel_coarse_chans}")
         start = time()
-        block_data = multiprocess_reading(block_num)
-        block_data = re_shape_input(np.array(data))
+        #Replaced the original read with a multiprocess_reading
+        #I had wrapped it around multiple functions to make it one line
+        block_data = re_shape_input(np.array(multiprocess_reading(block_num)))
         end = time()
         print(f"Data loaded in {end - start:.4f} seconds, processing")
 
@@ -159,12 +167,6 @@ if __name__ == "__main__":
         frame_list.append(vals_frame)
 
         print("Saving results")
-        # def save_stamps(channel_ind):
-        #     # print("%s processing channel %d of %s" % (current_process().name, channel_ind, block_file))
-        #     for res in chan_hits[channel_ind]:
-        #         i, s, p = res
-        #         plt.imsave((filtered_dir+"%d/%d.png" % (block_num, block_num*block_width + i)), cleaned_block_data[:, i:i+256])
-        #         # np.save((filtered_dir+"%d/%d.npy" % (block_num, block_num*block_width + i)), data[:, i:i+200])
         def aggregate_npy(channel_ind):
             inds = map(lambda x: x[0], chan_hits[channel_ind])
             return np.array([cleaned_block_data[:, ind:ind+256] for ind in inds])
