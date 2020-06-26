@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from bisect import bisect_left
 from tqdm import tqdm
 import h5py
+import hdf5plugin
 from time import time
 from multiprocessing import Pool, current_process
 import pickle
@@ -47,17 +48,22 @@ if __name__ == "__main__":
         pickle.dump(header, f)
         print("Header saved to "+out_dir+"/header.pkl")
 
-    hf = h5py.File(input_file, "r")
-
     frame_list = []
     stack_list = []
 
     for block_num in tqdm(range(num_blocks)):
         print(f"Processing coarse channels {block_num * parallel_coarse_chans}-{(block_num + 1) * parallel_coarse_chans}")
         start = time()
-        block_data = hf["data"][:, 0,
-        block_num*parallel_coarse_chans*coarse_channel_width:
-        (block_num+1)*parallel_coarse_chans*coarse_channel_width]
+        
+        def read_coarse_channel(channel_num):
+            hf = h5py.File(input_file, "r")
+            read_data =  hf["data"][:, 0, channel_num * 1024*1024 : (channel_num+1) * 1024*1024]
+            hf.close()
+            return read_data
+
+        with Pool(min(parallel_coarse_chans, os.cpu_count())) as p:
+            block_data = np.concatenate(p.map(read_coarse_channel,
+                range(block_num * parallel_coarse_chans, (block_num + 1) * parallel_coarse_chans)), axis=1)
         end = time()
         print(f"Data loaded in {end - start:.4f} seconds, processing")
 
